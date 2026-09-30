@@ -43,35 +43,29 @@ export const ContractInspector: React.FC<ContractInspectorProps> = ({
   return (
     <div className="flex flex-col gap-6">
       {/* Header Info Banner */}
-      <div className="p-5 rounded-xl bg-neutral-900/80 border border-neutral-800 flex flex-col md:flex-row md:items-center justify-between gap-4">
+      <div className="p-4 sm:p-5 rounded-xl bg-neutral-900/60 border border-neutral-800 flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
-          <div className="flex items-center gap-2 mb-1">
-            <span className="font-mono text-xs text-emerald-400 font-semibold">GENLAYER INTELLIGENT CONTRACT</span>
+          <div className="flex items-center gap-2 text-xs text-neutral-400 mb-1">
+            <span className="font-semibold text-emerald-400">{contractMetadata.contractName}</span>
             <span className="text-neutral-600">·</span>
-            <span className="text-xs text-neutral-400">Python 0.8.4 ABI</span>
+            <span className="font-mono">{contractMetadata.address.slice(0, 8)}...{contractMetadata.address.slice(-6)}</span>
           </div>
-          <h2 className="text-lg font-bold text-neutral-100 flex items-center gap-2">
-            <span>{contractMetadata.contractName}</span>
-            <span className="text-xs font-mono px-2 py-0.5 rounded bg-neutral-800 text-neutral-300 font-normal">
-              {contractMetadata.address.slice(0, 10)}...{contractMetadata.address.slice(-6)}
-            </span>
-          </h2>
-          <p className="text-xs text-neutral-400 mt-1 max-w-2xl">
-            GenLayer contracts run natively in Python with decentralized AI validators reaching Optimistic Consensus on non-deterministic math proofs.
+          <p className="text-xs text-neutral-400 max-w-xl">
+            Python smart contract executing multimodal extraction, symbolic solving, and optimistic consensus verification.
           </p>
         </div>
 
         <div className="flex items-center gap-2 shrink-0">
           <button
             onClick={copyCode}
-            className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-neutral-300 bg-neutral-800 hover:bg-neutral-700 rounded-lg transition-colors"
+            className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-neutral-300 bg-neutral-800 hover:bg-neutral-750 rounded-md transition-colors"
           >
             {copied ? <Check className="w-3.5 h-3.5 text-emerald-400" /> : <Copy className="w-3.5 h-3.5" />}
-            {copied ? 'Copied' : 'Copy Python'}
+            {copied ? 'Copied' : 'Copy'}
           </button>
           <button
             onClick={downloadCode}
-            className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-neutral-950 bg-emerald-400 hover:bg-emerald-300 rounded-lg transition-colors"
+            className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-neutral-950 bg-emerald-400 hover:bg-emerald-300 rounded-md transition-colors"
           >
             <Download className="w-3.5 h-3.5" />
             Download .py
@@ -80,50 +74,50 @@ export const ContractInspector: React.FC<ContractInspectorProps> = ({
       </div>
 
       {/* Tabs */}
-      <div className="flex items-center gap-2 border-b border-neutral-800 pb-2 overflow-x-auto">
+      <div className="flex items-center gap-1.5 border-b border-neutral-800 pb-2 overflow-x-auto text-xs">
         <button
           onClick={() => setActiveTab('functions')}
-          className={`flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium rounded-lg whitespace-nowrap transition-colors ${
+          className={`flex items-center gap-1.5 px-3 py-1.5 font-medium rounded-md whitespace-nowrap transition-colors ${
             activeTab === 'functions'
-              ? 'bg-neutral-800 text-emerald-400 border border-neutral-700'
+              ? 'bg-neutral-800 text-emerald-400'
               : 'text-neutral-400 hover:text-neutral-200'
           }`}
         >
           <Layers className="w-3.5 h-3.5" />
-          5 Contract Functions
+          Functions
         </button>
         <button
           onClick={() => setActiveTab('source')}
-          className={`flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium rounded-lg whitespace-nowrap transition-colors ${
+          className={`flex items-center gap-1.5 px-3 py-1.5 font-medium rounded-md whitespace-nowrap transition-colors ${
             activeTab === 'source'
-              ? 'bg-neutral-800 text-emerald-400 border border-neutral-700'
+              ? 'bg-neutral-800 text-emerald-400'
               : 'text-neutral-400 hover:text-neutral-200'
           }`}
         >
           <Code2 className="w-3.5 h-3.5" />
-          Full Source (Python)
+          Python Source
         </button>
         <button
           onClick={() => setActiveTab('architecture')}
-          className={`flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium rounded-lg whitespace-nowrap transition-colors ${
+          className={`flex items-center gap-1.5 px-3 py-1.5 font-medium rounded-md whitespace-nowrap transition-colors ${
             activeTab === 'architecture'
-              ? 'bg-neutral-800 text-emerald-400 border border-neutral-700'
+              ? 'bg-neutral-800 text-emerald-400'
               : 'text-neutral-400 hover:text-neutral-200'
           }`}
         >
           <Cpu className="w-3.5 h-3.5" />
-          Consensus & Equivalence
+          Consensus Architecture
         </button>
         <button
           onClick={() => setActiveTab('abi')}
-          className={`flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium rounded-lg whitespace-nowrap transition-colors ${
+          className={`flex items-center gap-1.5 px-3 py-1.5 font-medium rounded-md whitespace-nowrap transition-colors ${
             activeTab === 'abi'
-              ? 'bg-neutral-800 text-emerald-400 border border-neutral-700'
+              ? 'bg-neutral-800 text-emerald-400'
               : 'text-neutral-400 hover:text-neutral-200'
           }`}
         >
           <Terminal className="w-3.5 h-3.5" />
-          Storage & Public ABI
+          Public ABI
         </button>
       </div>
 

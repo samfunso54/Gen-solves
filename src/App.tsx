@@ -356,14 +356,14 @@ export default function App() {
         </button>
 
         {/* Zone 2: Clean text navigation links */}
-        <nav className="hidden md:flex items-center gap-6 text-xs font-medium text-neutral-400">
+        <nav className="hidden md:flex items-center gap-8 text-xs font-medium text-neutral-400">
           <button
             onClick={() => setActiveView('solver')}
             className={`transition-colors hover:text-neutral-100 ${
               activeView === 'solver' ? 'text-emerald-400 font-semibold' : ''
             }`}
           >
-            Solver Studio
+            Solver
           </button>
           <button
             onClick={() => setActiveView('presets')}
@@ -371,7 +371,7 @@ export default function App() {
               activeView === 'presets' ? 'text-emerald-400 font-semibold' : ''
             }`}
           >
-            Benchmark Specimen
+            Benchmarks
           </button>
           <button
             onClick={() => setActiveView('ledger')}
@@ -379,7 +379,7 @@ export default function App() {
               activeView === 'ledger' ? 'text-emerald-400 font-semibold' : ''
             }`}
           >
-            Ledger History ({historyRecords.length})
+            Ledger
           </button>
           <button
             onClick={() => setActiveView('contract')}
@@ -387,13 +387,13 @@ export default function App() {
               activeView === 'contract' ? 'text-emerald-400 font-semibold' : ''
             }`}
           >
-            Intelligent Contract (Python)
+            Contract
           </button>
         </nav>
 
         {/* Zone 3: 1-2 primary actions */}
         <div className="flex items-center gap-3">
-          <span className="hidden sm:inline-flex items-center gap-1.5 px-2.5 py-1 text-[11px] font-mono rounded bg-neutral-900 border border-neutral-800 text-neutral-300">
+          <span className="hidden sm:inline-flex items-center gap-1.5 px-2 py-0.5 text-xs text-neutral-400">
             <span className="w-1.5 h-1.5 rounded-full bg-emerald-400" />
             Asimov Testnet
           </span>
@@ -423,7 +423,7 @@ export default function App() {
                 : 'text-neutral-400'
             }`}
           >
-            Solver Studio
+            Solver
           </button>
           <button
             onClick={() => setActiveView('presets')}
@@ -433,7 +433,7 @@ export default function App() {
                 : 'text-neutral-400'
             }`}
           >
-            Specimen ({SAMPLE_MATH_PRESETS.length})
+            Benchmarks
           </button>
           <button
             onClick={() => setActiveView('ledger')}
@@ -443,7 +443,7 @@ export default function App() {
                 : 'text-neutral-400'
             }`}
           >
-            Ledger ({historyRecords.length})
+            Ledger
           </button>
           <button
             onClick={() => setActiveView('contract')}
@@ -453,7 +453,7 @@ export default function App() {
                 : 'text-neutral-400'
             }`}
           >
-            Contract Code
+            Contract
           </button>
         </div>
 
@@ -471,64 +471,59 @@ export default function App() {
                 }}
               />
             ) : (
-              <div className="flex flex-col gap-8">
-                {/* Hero Headline */}
-                <div className="max-w-3xl">
-                  <div className="flex items-center gap-2 text-xs font-mono text-emerald-400 mb-2 font-semibold">
-                    <span>MULTIMODAL INTELLIGENT CONTRACT</span>
-                    <span className="text-neutral-600">·</span>
-                    <span>OPTIMISTIC CONSENSUS</span>
-                  </div>
-                  <h1 className="text-2xl sm:text-4xl font-extrabold tracking-tight text-neutral-100 text-balance">
-                    Solve Any Mathematical Calculation by Taking a Picture
+              <div className="flex flex-col gap-6">
+                {/* Clean Hero Header */}
+                <div className="flex flex-col gap-1 max-w-2xl">
+                  <h1 className="text-xl sm:text-2xl font-bold tracking-tight text-neutral-100">
+                    Mathematical Vision Solver
                   </h1>
-                  <p className="mt-2 text-sm sm:text-base text-neutral-400 leading-relaxed">
-                    Submit photos of handwritten equations, textbook integrals, linear algebra matrices, or geometry diagrams. GenLayer intelligent validators extract the LaTeX formulation, compute rigorous proofs, and reach on-chain consensus.
+                  <p className="text-xs sm:text-sm text-neutral-400">
+                    Extract equations from images and verify solutions on-chain with GenLayer consensus.
                   </p>
                 </div>
 
                 {/* Input Method Switcher */}
                 <div className="flex flex-col gap-4">
-                  <div className="flex items-center gap-2 p-1 bg-neutral-900 rounded-xl border border-neutral-800 w-fit">
+                  <div className="flex items-center gap-1.5 p-1 bg-neutral-900 rounded-lg border border-neutral-800 w-fit">
                     <button
                       onClick={() => setInputMode('upload')}
-                      className={`flex items-center gap-1.5 px-3.5 py-1.5 text-xs font-medium rounded-lg transition-colors ${
+                      className={`flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium rounded-md transition-colors ${
                         inputMode === 'upload'
                           ? 'bg-neutral-800 text-neutral-100 shadow-sm'
                           : 'text-neutral-400 hover:text-neutral-200'
                       }`}
                     >
                       <Upload className="w-3.5 h-3.5 text-emerald-400" />
-                      <span>Upload Picture</span>
+                      <span>Upload Image</span>
                     </button>
                     <button
                       onClick={() => setInputMode('camera')}
-                      className={`flex items-center gap-1.5 px-3.5 py-1.5 text-xs font-medium rounded-lg transition-colors ${
+                      className={`flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium rounded-md transition-colors ${
                         inputMode === 'camera'
                           ? 'bg-neutral-800 text-neutral-100 shadow-sm'
                           : 'text-neutral-400 hover:text-neutral-200'
                       }`}
                     >
                       <Camera className="w-3.5 h-3.5 text-emerald-400" />
-                      <span>Live Camera Scan</span>
+                      <span>Camera</span>
                     </button>
                     <button
                       onClick={() => setInputMode('whiteboard')}
-                      className={`flex items-center gap-1.5 px-3.5 py-1.5 text-xs font-medium rounded-lg transition-colors ${
+                      className={`flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium rounded-md transition-colors ${
                         inputMode === 'whiteboard'
                           ? 'bg-neutral-800 text-neutral-100 shadow-sm'
                           : 'text-neutral-400 hover:text-neutral-200'
                       }`}
                     >
                       <PenTool className="w-3.5 h-3.5 text-emerald-400" />
-                      <span>Draw Math</span>
+                      <span>Draw</span>
                     </button>
                   </div>
 
                   {/* Mode 1: File Upload */}
                   {inputMode === 'upload' && (
-                    <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
-                      <div className="lg:col-span-7 flex flex-col gap-4">
+                    <div className="grid grid-cols-1 lg:grid-cols-12 gap-5">
+                      <div className="lg:col-span-7 flex flex-col gap-3">
                         <div
                           onClick={() => fileInputRef.current?.click()}
                           onDragOver={(e) => e.preventDefault()}
@@ -541,10 +536,10 @@ export default function App() {
                               reader.readAsDataURL(file);
                             }
                           }}
-                          className={`border-2 border-dashed rounded-2xl p-8 flex flex-col items-center justify-center text-center cursor-pointer transition-all ${
+                          className={`border border-dashed rounded-xl p-6 sm:p-8 flex flex-col items-center justify-center text-center cursor-pointer transition-all ${
                             selectedImage
                               ? 'border-emerald-500/50 bg-neutral-900/40'
-                              : 'border-neutral-800 hover:border-emerald-500/40 bg-neutral-900/30'
+                              : 'border-neutral-800 hover:border-neutral-700 bg-neutral-900/30'
                           }`}
                         >
                           <input
@@ -554,58 +549,43 @@ export default function App() {
                             onChange={handleFileUpload}
                             className="hidden"
                           />
-                          <div className="w-12 h-12 rounded-xl bg-neutral-900 border border-neutral-800 flex items-center justify-center text-emerald-400 mb-3 shadow-inner">
-                            <Upload className="w-6 h-6" />
+                          <div className="w-10 h-10 rounded-lg bg-neutral-900 border border-neutral-800 flex items-center justify-center text-emerald-400 mb-2.5">
+                            <Upload className="w-5 h-5" />
                           </div>
-                          <span className="text-sm font-semibold text-neutral-200">
-                            Drop your math problem image here, or browse files
+                          <span className="text-xs sm:text-sm font-medium text-neutral-200">
+                            Drop math equation image here, or browse files
                           </span>
-                          <span className="text-xs text-neutral-500 mt-1">
-                            Supports PNG, JPG, JPEG, WEBP · Handwritten or printed
+                          <span className="text-[11px] text-neutral-500 mt-1">
+                            PNG, JPG, WEBP · Handwritten, whiteboard, or textbook
                           </span>
-
-                          <div className="mt-4 flex items-center gap-2 text-xs text-neutral-400">
-                            <span className="px-2 py-0.5 rounded bg-neutral-800 font-mono text-[11px]">
-                              Calculus
-                            </span>
-                            <span className="px-2 py-0.5 rounded bg-neutral-800 font-mono text-[11px]">
-                              Algebra
-                            </span>
-                            <span className="px-2 py-0.5 rounded bg-neutral-800 font-mono text-[11px]">
-                              Matrices
-                            </span>
-                            <span className="px-2 py-0.5 rounded bg-neutral-800 font-mono text-[11px]">
-                              Geometry
-                            </span>
-                          </div>
                         </div>
 
                         {/* Optional context field */}
-                        <div className="p-4 rounded-xl bg-neutral-900/60 border border-neutral-800 flex flex-col gap-2">
-                          <label className="text-xs font-medium text-neutral-300">
-                            Optional Problem Context / Instructions:
+                        <div className="flex items-center gap-2 px-3 py-2 rounded-lg bg-neutral-900/50 border border-neutral-800">
+                          <label className="text-xs text-neutral-400 shrink-0">
+                            Notes:
                           </label>
                           <input
                             type="text"
                             value={problemNotes}
                             onChange={(e) => setProblemNotes(e.target.value)}
-                            placeholder="e.g. Find the roots over complex domain, or evaluate at t = 2.5s"
-                            className="w-full px-3 py-2 text-xs bg-neutral-950 border border-neutral-800 rounded-lg text-neutral-200 placeholder:text-neutral-600 focus:outline-none focus:border-emerald-500/50"
+                            placeholder="Optional: specify domain, bounds, or evaluation target"
+                            className="w-full text-xs bg-transparent text-neutral-200 placeholder:text-neutral-600 focus:outline-none"
                           />
                         </div>
                       </div>
 
                       {/* Preview Column */}
-                      <div className="lg:col-span-5 flex flex-col gap-4">
-                        <div className="p-5 rounded-xl bg-neutral-900/60 border border-neutral-800 flex flex-col gap-3 min-h-[300px]">
-                          <div className="flex items-center justify-between pb-2 border-b border-neutral-800">
-                            <span className="text-xs font-semibold text-neutral-300">
-                              Selected Image Preview
+                      <div className="lg:col-span-5 flex flex-col">
+                        <div className="p-4 rounded-xl bg-neutral-900/50 border border-neutral-800 flex flex-col gap-3 min-h-[240px] h-full">
+                          <div className="flex items-center justify-between pb-2 border-b border-neutral-800/80">
+                            <span className="text-xs font-medium text-neutral-300">
+                              Selected Image
                             </span>
                             {selectedImage && (
                               <button
                                 onClick={() => setSelectedImage(null)}
-                                className="text-xs text-red-400 hover:text-red-300"
+                                className="text-xs text-neutral-400 hover:text-red-400 transition-colors"
                               >
                                 Clear
                               </button>
@@ -614,40 +594,40 @@ export default function App() {
 
                           {selectedImage ? (
                             <div className="flex-1 flex flex-col gap-3">
-                              <div className="rounded-lg overflow-hidden border border-neutral-800 bg-black max-h-64 flex items-center justify-center">
+                              <div className="rounded-lg overflow-hidden border border-neutral-800 bg-black flex-1 flex items-center justify-center max-h-52">
                                 <img
                                   src={selectedImage}
-                                  alt="Selected Math Problem"
-                                  className="w-full h-full object-contain max-h-64"
+                                  alt="Selected Problem"
+                                  className="w-full h-full object-contain max-h-52"
                                   referrerPolicy="no-referrer"
                                 />
                               </div>
                               <button
                                 onClick={handleExecuteSolve}
                                 disabled={isSolving}
-                                className="w-full py-3 px-4 text-xs font-bold text-neutral-950 bg-emerald-400 hover:bg-emerald-300 disabled:opacity-50 disabled:hover:bg-emerald-400 rounded-xl transition-all shadow-md shadow-emerald-500/10 flex items-center justify-center gap-2 mt-auto"
+                                className="w-full py-2.5 px-4 text-xs font-semibold text-neutral-950 bg-emerald-400 hover:bg-emerald-300 disabled:opacity-50 rounded-lg transition-all flex items-center justify-center gap-2 mt-auto"
                               >
                                 {isSolving ? (
                                   <>
-                                    <RefreshCw className="w-4 h-4 animate-spin" />
-                                    <span>Processing GenLayer Proof...</span>
+                                    <RefreshCw className="w-3.5 h-3.5 animate-spin" />
+                                    <span>Verifying Solution...</span>
                                   </>
                                 ) : (
                                   <>
-                                    <Sparkles className="w-4 h-4" />
-                                    <span>Execute GenLayer Intelligent Contract</span>
+                                    <Sparkles className="w-3.5 h-3.5" />
+                                    <span>Solve Equation</span>
                                   </>
                                 )}
                               </button>
                             </div>
                           ) : (
-                            <div className="flex-1 flex flex-col items-center justify-center text-center p-6 text-neutral-500 gap-2">
-                              <Layers className="w-10 h-10 opacity-30 text-emerald-400" />
+                            <div className="flex-1 flex flex-col items-center justify-center text-center p-4 text-neutral-500 gap-1.5">
+                              <Layers className="w-8 h-8 opacity-30 text-emerald-400 mb-1" />
                               <span className="text-xs font-medium text-neutral-400">
-                                No image selected yet
+                                No image selected
                               </span>
-                              <p className="text-[11px] text-neutral-500 max-w-xs">
-                                Choose an image file above, or select one of the pre-loaded benchmark specimens below.
+                              <p className="text-[11px] text-neutral-500">
+                                Upload a photo or select a benchmark below.
                               </p>
                             </div>
                           )}
@@ -681,82 +661,60 @@ export default function App() {
 
                 {/* Solving Progress State */}
                 {isSolving && (
-                  <div className="p-6 rounded-2xl bg-gradient-to-r from-emerald-950/40 via-neutral-900 to-neutral-900 border border-emerald-500/30 flex flex-col items-center justify-center text-center gap-4 animate-pulse">
-                    <div className="w-12 h-12 rounded-full bg-emerald-500/10 border border-emerald-500/30 flex items-center justify-center text-emerald-400">
-                      <Cpu className="w-6 h-6 animate-spin" />
-                    </div>
+                  <div className="p-5 rounded-xl bg-neutral-900 border border-emerald-500/30 flex flex-col items-center justify-center text-center gap-3">
+                    <Cpu className="w-5 h-5 text-emerald-400 animate-spin" />
                     <div>
-                      <h3 className="text-sm font-bold text-neutral-100">
-                        GenLayer Optimistic Consensus in Progress
+                      <h3 className="text-xs font-semibold text-neutral-200">
+                        Executing Consensus Validation
                       </h3>
-                      <p className="text-xs text-emerald-400 font-mono mt-1">
-                        {solvingPhase || 'Running validator nodes...'}
+                      <p className="text-xs text-emerald-400 font-mono mt-0.5">
+                        {solvingPhase || 'Running validator quorum...'}
                       </p>
-                    </div>
-                    <div className="flex items-center gap-3 text-xs text-neutral-500 font-mono">
-                      <span>5 Nodes Active</span>
-                      <span>·</span>
-                      <span>SymPy Equivalence Testing</span>
-                      <span>·</span>
-                      <span>Vision Token Extraction</span>
                     </div>
                   </div>
                 )}
 
                 {/* Auto-Retry Status Indicator */}
                 {retryCount > 0 && isSolving && (
-                  <div className="p-3.5 rounded-xl bg-emerald-950/30 border border-emerald-500/30 flex items-center justify-between text-xs text-emerald-300">
+                  <div className="p-3 rounded-lg bg-emerald-950/20 border border-emerald-500/20 flex items-center justify-between text-xs text-emerald-300">
                     <div className="flex items-center gap-2">
-                      <RefreshCw className="w-4 h-4 animate-spin text-emerald-400" />
-                      <span>Auto-retrying consensus validation across nodes (Attempt {retryCount} of 3)...</span>
+                      <RefreshCw className="w-3.5 h-3.5 animate-spin text-emerald-400" />
+                      <span>Retrying across validator nodes (Attempt {retryCount} of 3)...</span>
                     </div>
-                    <span className="font-mono text-[11px] text-emerald-400/80">Self-Healing Active</span>
                   </div>
                 )}
 
-                {/* Quick Specimen Picker Carousel */}
-                <div className="flex flex-col gap-3 pt-4 border-t border-neutral-800">
+                {/* Quick Specimen Picker */}
+                <div className="flex flex-col gap-3 pt-4 border-t border-neutral-850">
                   <div className="flex items-center justify-between">
-                    <div>
-                      <h3 className="text-sm font-bold text-neutral-200">
-                        Try Benchmark Problem Specimen
-                      </h3>
-                      <p className="text-xs text-neutral-500">
-                        Instant complex mathematical problems to test GenLayer vision & proof derivation
-                      </p>
-                    </div>
+                    <h3 className="text-xs font-semibold text-neutral-300">
+                      Benchmark Problems
+                    </h3>
                     <button
                       onClick={() => setActiveView('presets')}
-                      className="text-xs text-emerald-400 hover:text-emerald-300 flex items-center gap-1"
+                      className="text-xs text-neutral-400 hover:text-emerald-400 flex items-center gap-1 transition-colors"
                     >
                       <span>View All ({SAMPLE_MATH_PRESETS.length})</span>
                       <ArrowRight className="w-3.5 h-3.5" />
                     </button>
                   </div>
 
-                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
                     {SAMPLE_MATH_PRESETS.slice(0, 3).map((preset) => (
                       <div
                         key={preset.id}
                         onClick={() => handleSelectPreset(preset)}
-                        className="p-4 rounded-xl bg-neutral-900/70 border border-neutral-800 hover:border-emerald-500/40 hover:bg-neutral-900 cursor-pointer transition-all flex flex-col gap-2 group"
+                        className="p-3.5 rounded-lg bg-neutral-900/60 border border-neutral-800 hover:border-neutral-700 hover:bg-neutral-900 cursor-pointer transition-all flex flex-col gap-2 group"
                       >
-                        <div className="flex items-center justify-between text-[11px]">
+                        <div className="flex items-center justify-between text-[11px] text-neutral-400">
                           <span className="text-emerald-400 font-medium">{preset.category}</span>
-                          <span className="text-neutral-500">{preset.difficulty}</span>
+                          <span>{preset.difficulty}</span>
                         </div>
-                        <h4 className="text-xs font-semibold text-neutral-200 group-hover:text-emerald-300 transition-colors">
+                        <h4 className="text-xs font-medium text-neutral-200 group-hover:text-emerald-300 transition-colors truncate">
                           {preset.title}
                         </h4>
-                        <div className="p-2.5 rounded bg-neutral-950 border border-neutral-800/80 font-mono text-center text-xs text-neutral-300 overflow-x-auto my-1">
+                        <div className="py-2 px-2.5 rounded bg-neutral-950 border border-neutral-850 text-center text-xs text-neutral-300 overflow-x-auto">
                           <MathView math={preset.previewLatex} />
-                        </div>
-                        <span className="text-[11px] text-neutral-500 line-clamp-2">
-                          {preset.description}
-                        </span>
-                        <div className="pt-2 mt-auto border-t border-neutral-800/60 flex items-center justify-between text-xs text-neutral-400 group-hover:text-emerald-400">
-                          <span>Load Specimen</span>
-                          <ArrowRight className="w-3.5 h-3.5 group-hover:translate-x-0.5 transition-transform" />
                         </div>
                       </div>
                     ))}
@@ -769,51 +727,45 @@ export default function App() {
 
         {/* VIEW 2: Benchmark Specimen Gallery */}
         {activeView === 'presets' && (
-          <div className="flex flex-col gap-6">
-            <div>
-              <span className="font-mono text-xs text-emerald-400 font-semibold block mb-1">
-                MATHEMATICAL BENCHMARK SUITE
-              </span>
-              <h2 className="text-xl sm:text-2xl font-bold text-neutral-100">
-                Curated Problem Specimen for GenLayer Validation
+          <div className="flex flex-col gap-5">
+            <div className="flex flex-col gap-1">
+              <h2 className="text-lg font-bold text-neutral-100">
+                Benchmark Problems
               </h2>
-              <p className="text-xs text-neutral-400 mt-1 max-w-2xl">
-                Each specimen demonstrates high-degree multimodal vision processing, LaTeX transcription, symbolic derivation, and consensus equivalence across various STEM branches.
+              <p className="text-xs text-neutral-400">
+                Curated equations to test multimodal extraction, symbolic solving, and consensus validation.
               </p>
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               {SAMPLE_MATH_PRESETS.map((preset) => (
                 <div
                   key={preset.id}
-                  className="p-5 rounded-xl bg-neutral-900/80 border border-neutral-800 flex flex-col gap-4"
+                  className="p-4 rounded-xl bg-neutral-900/60 border border-neutral-800 flex flex-col gap-3"
                 >
-                  <div className="flex items-center justify-between pb-2 border-b border-neutral-800">
-                    <span className="text-xs font-semibold text-emerald-400">{preset.category}</span>
-                    <span className="text-[11px] font-mono text-neutral-400 px-2 py-0.5 rounded bg-neutral-950">
+                  <div className="flex items-center justify-between text-xs">
+                    <span className="font-medium text-emerald-400">{preset.category}</span>
+                    <span className="text-[11px] text-neutral-400">
                       {preset.difficulty}
                     </span>
                   </div>
 
                   <div>
-                    <h3 className="text-sm font-bold text-neutral-100 mb-1">{preset.title}</h3>
-                    <p className="text-xs text-neutral-400">{preset.description}</p>
+                    <h3 className="text-xs font-semibold text-neutral-200">{preset.title}</h3>
+                    <p className="text-[11px] text-neutral-400 mt-0.5">{preset.description}</p>
                   </div>
 
-                  <div className="p-3.5 rounded-lg bg-neutral-950 border border-neutral-800 text-center font-mono text-sm text-emerald-300 overflow-x-auto">
+                  <div className="p-3 rounded-lg bg-neutral-950 border border-neutral-850 text-center font-mono text-sm text-emerald-300 overflow-x-auto">
                     <MathView math={preset.previewLatex} displayMode={true} />
                   </div>
 
-                  <div className="pt-2 mt-auto border-t border-neutral-800 flex items-center justify-between">
-                    <span className="text-xs text-neutral-500 font-mono">
-                      Image generated on-the-fly
-                    </span>
+                  <div className="pt-2 mt-auto border-t border-neutral-800/80 flex items-center justify-end">
                     <button
                       onClick={() => handleSelectPreset(preset)}
-                      className="px-4 py-1.5 text-xs font-semibold text-neutral-950 bg-emerald-400 hover:bg-emerald-300 rounded-lg transition-colors flex items-center gap-1.5"
+                      className="px-3 py-1.5 text-xs font-medium text-neutral-950 bg-emerald-400 hover:bg-emerald-300 rounded-md transition-colors flex items-center gap-1.5"
                     >
                       <Sparkles className="w-3.5 h-3.5" />
-                      <span>Solve with Contract</span>
+                      <span>Solve Problem</span>
                     </button>
                   </div>
                 </div>
@@ -824,16 +776,13 @@ export default function App() {
 
         {/* VIEW 3: On-Chain Ledger */}
         {activeView === 'ledger' && (
-          <div className="flex flex-col gap-6">
-            <div>
-              <span className="font-mono text-xs text-emerald-400 font-semibold block mb-1">
-                GENLAYER ON-CHAIN STORAGE
-              </span>
-              <h2 className="text-xl sm:text-2xl font-bold text-neutral-100">
-                Mathematical Solutions Ledger
+          <div className="flex flex-col gap-5">
+            <div className="flex flex-col gap-1">
+              <h2 className="text-lg font-bold text-neutral-100">
+                Verification Ledger
               </h2>
-              <p className="text-xs text-neutral-400 mt-1 max-w-2xl">
-                Every calculation solved via image snapshot is permanently recorded with transaction hashes, block height, and 5/5 validator signatures.
+              <p className="text-xs text-neutral-400">
+                Immutable records of verified solutions with cryptographic transaction hashes and validator quorums.
               </p>
             </div>
 
@@ -858,15 +807,15 @@ export default function App() {
       </main>
 
       {/* Footer */}
-      <footer className="border-t border-neutral-800/80 bg-neutral-950 text-neutral-500 text-xs py-6 px-4 sm:px-8 mt-auto">
-        <div className="max-w-7xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-4">
+      <footer className="border-t border-neutral-800/80 bg-neutral-950 text-neutral-500 text-xs py-4 px-4 sm:px-8 mt-auto">
+        <div className="max-w-7xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-2">
           <div className="flex items-center gap-2">
-            <span className="font-semibold text-neutral-400">Gen Solves Contract</span>
+            <span className="font-medium text-neutral-400">Gen Solves</span>
             <span>·</span>
-            <span>Optimistic Consensus Multimodal AI</span>
+            <span>Intelligent Contract on GenLayer Testnet</span>
           </div>
-          <div className="text-neutral-500">
-            Deployed on GenLayer Asimov Testnet · Connected to decentralized validator network
+          <div className="text-neutral-500 text-[11px]">
+            Decentralized validator consensus
           </div>
         </div>
       </footer>
