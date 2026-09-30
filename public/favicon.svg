@@ -1,0 +1,13 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 120 120" fill="none">
+  <!-- Top Neon Green Sparkle / Star -->
+  <path d="M46 10 C46 22 55 28 66 28 C55 28 46 34 46 46 C46 34 37 28 26 28 C37 28 46 22 46 10 Z" fill="#38EF7D" />
+
+  <!-- Upper Electric Blue Chevron with Terminal Node -->
+  <path d="M72 50 L34 60 L70 70" stroke="#1D63FF" stroke-width="8" stroke-linecap="round" stroke-linejoin="round" />
+  <circle cx="70" cy="70" r="5" fill="#1D63FF" stroke="#1D63FF" stroke-width="2" />
+
+  <!-- Lower Dark Circuit Arm with Node -->
+  <line x1="22" y1="88" x2="64" y2="72" stroke="#0F172A" stroke-width="8" stroke-linecap="round" />
+  <circle cx="22" cy="88" r="8" fill="#0A0F1D" stroke="#0F172A" stroke-width="4" />
+  <circle cx="22" cy="88" r="3" fill="#FFFFFF" />
+</svg>

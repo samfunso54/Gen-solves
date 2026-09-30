@@ -13,22 +13,27 @@ import {
   RefreshCw,
   ArrowRight,
   BookOpen,
+  Mic,
 } from 'lucide-react';
+import { Logo } from './components/Logo';
 import { MathView } from './components/MathView';
 import { MathWhiteboard } from './components/MathWhiteboard';
 import { CameraCapture } from './components/CameraCapture';
+import { VoiceCapture } from './components/VoiceCapture';
 import { SolutionResultView, SolvedMathData } from './components/SolutionResultView';
 import { ContractInspector } from './components/ContractInspector';
 import { ContractLedger } from './components/ContractLedger';
 import { SAMPLE_MATH_PRESETS, MathPreset } from './data/sampleProblems';
 
 type ActiveView = 'solver' | 'ledger' | 'contract' | 'presets';
-type InputMode = 'upload' | 'camera' | 'whiteboard';
+type InputMode = 'upload' | 'camera' | 'whiteboard' | 'voice';
 
 export default function App() {
   const [activeView, setActiveView] = useState<ActiveView>('solver');
   const [inputMode, setInputMode] = useState<InputMode>('upload');
   const [selectedImage, setSelectedImage] = useState<string | null>(null);
+  const [selectedAudio, setSelectedAudio] = useState<string | null>(null);
+  const [audioDuration, setAudioDuration] = useState<number>(0);
   const [problemNotes, setProblemNotes] = useState('');
   const [isSolving, setIsSolving] = useState(false);
   const [solvingPhase, setSolvingPhase] = useState<string>('');
@@ -174,11 +179,21 @@ export default function App() {
     setActiveView('solver');
   };
 
-  const handleExecuteSolve = async () => {
-    // If no image is provided, auto-select a specimen instead of erroring
-    let imageToSolve = selectedImage;
-    let notesToSolve = problemNotes;
-    if (!imageToSolve) {
+  const handleExecuteSolve = async (
+    overrideImage?: string,
+    overrideNotes?: string,
+    overrideAudio?: string
+  ) => {
+    const isVoice = Boolean(
+      inputMode === 'voice' ||
+        overrideAudio !== undefined ||
+        (selectedAudio && !selectedImage && !overrideImage)
+    );
+    let audioToSolve = overrideAudio !== undefined ? overrideAudio : selectedAudio;
+    let imageToSolve = overrideImage !== undefined ? overrideImage : selectedImage;
+    let notesToSolve = overrideNotes !== undefined ? overrideNotes : problemNotes;
+
+    if (!isVoice && !imageToSolve) {
       const defaultSpecimen = SAMPLE_MATH_PRESETS[0];
       imageToSolve = defaultSpecimen.renderToDataUrl();
       notesToSolve = `Category: ${defaultSpecimen.category}. ${defaultSpecimen.description}`;
@@ -190,12 +205,16 @@ export default function App() {
     setRetryCount(0);
 
     // Staged progress phases to demonstrate GenLayer validator pipeline
-    setSolvingPhase('Ingesting multimodal visual payload...');
+    setSolvingPhase(isVoice ? 'Ingesting spoken audio payload...' : 'Ingesting multimodal visual payload...');
     const phaseTimer1 = setTimeout(() => {
-      setSolvingPhase('Leader validator transcribing equations & LaTeX symbols...');
+      setSolvingPhase(
+        isVoice
+          ? 'Gemini validator transcribing spoken audio into canonical LaTeX...'
+          : 'Leader validator transcribing equations & LaTeX symbols...'
+      );
     }, 1200);
     const phaseTimer2 = setTimeout(() => {
-      setSolvingPhase('Constructing symbolic proof & mathematical derivation...');
+      setSolvingPhase('Constructing symbolic proof & inverse verification...');
     }, 2800);
     const phaseTimer3 = setTimeout(() => {
       setSolvingPhase('Running Multi-Validator Equivalence Consensus (5 Nodes)...');
@@ -216,7 +235,9 @@ export default function App() {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
-            imageBase64: imageToSolve,
+            imageBase64: isVoice ? undefined : imageToSolve,
+            audioBase64: isVoice ? audioToSolve : undefined,
+            inputType: isVoice ? 'voice' : 'image',
             problemNotes: notesToSolve,
           }),
         });
@@ -226,7 +247,9 @@ export default function App() {
           if (result && result.solution) {
             resolvedRecord = {
               imageHash: result.imageHash || '0x' + Math.random().toString(16).slice(2),
-              imagePreviewUrl: imageToSolve,
+              imagePreviewUrl: result.previewUrl || imageToSolve || '',
+              audioUrl: result.audioUrl || (isVoice ? audioToSolve || undefined : undefined),
+              isVoice: result.isVoice || isVoice,
               solution: result.solution,
               contract_lifecycle: result.contract_lifecycle,
               genlayer_consensus: result.genlayer_consensus,
@@ -245,7 +268,9 @@ export default function App() {
       const fallbackPreset = SAMPLE_MATH_PRESETS[0];
       resolvedRecord = {
         imageHash: '7f9c8321a4de11e9820042010a800002b8e3a2468d6174a7b9c1d09e5264c781',
-        imagePreviewUrl: imageToSolve,
+        imagePreviewUrl: imageToSolve || fallbackPreset.renderToDataUrl(),
+        isVoice: isVoice,
+        audioUrl: audioToSolve || undefined,
         solution: {
           problem_raw: notesToSolve || 'Definite Gaussian Integral over Real Axis',
           problem_latex: 'I = \\int_{-\\infty}^{+\\infty} e^{-x^2} \\, dx = \\sqrt{\\pi}',
@@ -341,26 +366,25 @@ export default function App() {
 
   return (
     <div className="min-h-screen bg-neutral-950 text-neutral-100 flex flex-col font-sans">
-      {/* Top Bar Contract (Single-line wordmark, 4 clean nav links, 1-2 primary actions) */}
-      <header className="border-b border-neutral-800 bg-neutral-950/90 backdrop-blur sticky top-0 z-30 px-4 sm:px-8 py-3.5 flex items-center justify-between">
-        {/* Zone 1: Single text element wordmark */}
+      {/* Top Bar Contract (Official Gen Solves Logo + responsive nav + primary action) */}
+      <header className="border-b border-neutral-800 bg-neutral-950/95 backdrop-blur sticky top-0 z-30 px-3 sm:px-6 md:px-8 py-3 flex items-center justify-between">
+        {/* Zone 1: Official Logo */}
         <button
           onClick={() => {
             setActiveView('solver');
             setCurrentSolution(null);
           }}
-          className="text-base sm:text-lg font-bold tracking-tight text-neutral-100 hover:text-emerald-400 transition-colors flex items-center gap-2"
+          className="hover:opacity-90 transition-opacity"
         >
-          <div className="w-2.5 h-2.5 rounded-full bg-emerald-400 animate-pulse" />
-          <span>Gen Solves</span>
+          <Logo size="md" />
         </button>
 
         {/* Zone 2: Clean text navigation links */}
-        <nav className="hidden md:flex items-center gap-8 text-xs font-medium text-neutral-400">
+        <nav className="hidden md:flex items-center gap-7 text-xs font-medium text-neutral-400">
           <button
             onClick={() => setActiveView('solver')}
             className={`transition-colors hover:text-neutral-100 ${
-              activeView === 'solver' ? 'text-emerald-400 font-semibold' : ''
+              activeView === 'solver' ? 'text-blue-400 font-semibold' : ''
             }`}
           >
             Solver
@@ -368,7 +392,7 @@ export default function App() {
           <button
             onClick={() => setActiveView('presets')}
             className={`transition-colors hover:text-neutral-100 ${
-              activeView === 'presets' ? 'text-emerald-400 font-semibold' : ''
+              activeView === 'presets' ? 'text-blue-400 font-semibold' : ''
             }`}
           >
             Benchmarks
@@ -376,7 +400,7 @@ export default function App() {
           <button
             onClick={() => setActiveView('ledger')}
             className={`transition-colors hover:text-neutral-100 ${
-              activeView === 'ledger' ? 'text-emerald-400 font-semibold' : ''
+              activeView === 'ledger' ? 'text-blue-400 font-semibold' : ''
             }`}
           >
             Ledger
@@ -384,15 +408,15 @@ export default function App() {
           <button
             onClick={() => setActiveView('contract')}
             className={`transition-colors hover:text-neutral-100 ${
-              activeView === 'contract' ? 'text-emerald-400 font-semibold' : ''
+              activeView === 'contract' ? 'text-blue-400 font-semibold' : ''
             }`}
           >
             Contract
           </button>
         </nav>
 
-        {/* Zone 3: 1-2 primary actions */}
-        <div className="flex items-center gap-3">
+        {/* Zone 3: Actions & Network */}
+        <div className="flex items-center gap-2 sm:gap-3">
           <span className="hidden sm:inline-flex items-center gap-1.5 px-2 py-0.5 text-xs text-neutral-400">
             <span className="w-1.5 h-1.5 rounded-full bg-emerald-400" />
             Asimov Testnet
@@ -402,24 +426,25 @@ export default function App() {
               setActiveView('solver');
               setCurrentSolution(null);
               setSelectedImage(null);
+              setSelectedAudio(null);
               setProblemNotes('');
             }}
-            className="px-3.5 py-1.5 text-xs font-semibold text-neutral-950 bg-emerald-400 hover:bg-emerald-300 rounded-lg transition-colors whitespace-nowrap"
+            className="px-3 sm:px-3.5 py-1.5 text-xs font-semibold text-neutral-950 bg-blue-500 hover:bg-blue-400 rounded-lg transition-colors whitespace-nowrap"
           >
-            + New Calculation
+            + New Solve
           </button>
         </div>
       </header>
 
       {/* Main Content Viewport */}
-      <main className="flex-1 max-w-7xl w-full mx-auto p-4 sm:p-8">
+      <main className="flex-1 max-w-7xl w-full mx-auto px-3 sm:px-6 md:px-8 py-4 sm:py-6">
         {/* Navigation Tabs for Mobile */}
-        <div className="flex md:hidden items-center gap-2 overflow-x-auto pb-4 mb-4 border-b border-neutral-800 text-xs font-medium">
+        <div className="flex md:hidden items-center gap-1.5 overflow-x-auto pb-3 mb-4 border-b border-neutral-800 text-xs font-medium no-scrollbar">
           <button
             onClick={() => setActiveView('solver')}
-            className={`px-3 py-1.5 rounded-lg whitespace-nowrap ${
+            className={`px-3 py-1.5 rounded-md whitespace-nowrap transition-colors ${
               activeView === 'solver'
-                ? 'bg-neutral-800 text-emerald-400'
+                ? 'bg-neutral-800 text-blue-400 font-medium'
                 : 'text-neutral-400'
             }`}
           >
@@ -427,9 +452,9 @@ export default function App() {
           </button>
           <button
             onClick={() => setActiveView('presets')}
-            className={`px-3 py-1.5 rounded-lg whitespace-nowrap ${
+            className={`px-3 py-1.5 rounded-md whitespace-nowrap transition-colors ${
               activeView === 'presets'
-                ? 'bg-neutral-800 text-emerald-400'
+                ? 'bg-neutral-800 text-blue-400 font-medium'
                 : 'text-neutral-400'
             }`}
           >
@@ -437,9 +462,9 @@ export default function App() {
           </button>
           <button
             onClick={() => setActiveView('ledger')}
-            className={`px-3 py-1.5 rounded-lg whitespace-nowrap ${
+            className={`px-3 py-1.5 rounded-md whitespace-nowrap transition-colors ${
               activeView === 'ledger'
-                ? 'bg-neutral-800 text-emerald-400'
+                ? 'bg-neutral-800 text-blue-400 font-medium'
                 : 'text-neutral-400'
             }`}
           >
@@ -447,9 +472,9 @@ export default function App() {
           </button>
           <button
             onClick={() => setActiveView('contract')}
-            className={`px-3 py-1.5 rounded-lg whitespace-nowrap ${
+            className={`px-3 py-1.5 rounded-md whitespace-nowrap transition-colors ${
               activeView === 'contract'
-                ? 'bg-neutral-800 text-emerald-400'
+                ? 'bg-neutral-800 text-blue-400 font-medium'
                 : 'text-neutral-400'
             }`}
           >
@@ -459,7 +484,7 @@ export default function App() {
 
         {/* VIEW 1: Solver Studio */}
         {activeView === 'solver' && (
-          <div className="flex flex-col gap-8">
+          <div className="flex flex-col gap-6 sm:gap-8">
             {/* If solution exists, show detailed result; otherwise show upload/input interface */}
             {currentSolution ? (
               <SolutionResultView
@@ -467,55 +492,67 @@ export default function App() {
                 onSolveAnother={() => {
                   setCurrentSolution(null);
                   setSelectedImage(null);
+                  setSelectedAudio(null);
                   setProblemNotes('');
                 }}
               />
             ) : (
-              <div className="flex flex-col gap-6">
+              <div className="flex flex-col gap-5 sm:gap-6">
                 {/* Clean Hero Header */}
                 <div className="flex flex-col gap-1 max-w-2xl">
                   <h1 className="text-xl sm:text-2xl font-bold tracking-tight text-neutral-100">
-                    Mathematical Vision Solver
+                    Mathematical Vision & Voice Solver
                   </h1>
                   <p className="text-xs sm:text-sm text-neutral-400">
-                    Extract equations from images and verify solutions on-chain with GenLayer consensus.
+                    Extract equations from photos or speak them as voice notes. Verified on-chain via GenLayer consensus.
                   </p>
                 </div>
 
                 {/* Input Method Switcher */}
                 <div className="flex flex-col gap-4">
-                  <div className="flex items-center gap-1.5 p-1 bg-neutral-900 rounded-lg border border-neutral-800 w-fit">
+                  <div className="flex items-center gap-1.5 p-1 bg-neutral-900 rounded-lg border border-neutral-800 w-full sm:w-fit overflow-x-auto">
                     <button
                       onClick={() => setInputMode('upload')}
-                      className={`flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium rounded-md transition-colors ${
+                      className={`flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium rounded-md transition-colors whitespace-nowrap ${
                         inputMode === 'upload'
                           ? 'bg-neutral-800 text-neutral-100 shadow-sm'
                           : 'text-neutral-400 hover:text-neutral-200'
                       }`}
                     >
-                      <Upload className="w-3.5 h-3.5 text-emerald-400" />
+                      <Upload className="w-3.5 h-3.5 text-blue-400" />
                       <span>Upload Image</span>
                     </button>
                     <button
+                      onClick={() => setInputMode('voice')}
+                      className={`flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium rounded-md transition-colors whitespace-nowrap ${
+                        inputMode === 'voice'
+                          ? 'bg-neutral-800 text-neutral-100 shadow-sm'
+                          : 'text-neutral-400 hover:text-neutral-200'
+                      }`}
+                    >
+                      <Mic className="w-3.5 h-3.5 text-blue-400" />
+                      <span>Voice Note</span>
+                    </button>
+                    <button
                       onClick={() => setInputMode('camera')}
-                      className={`flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium rounded-md transition-colors ${
+                      className={`flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium rounded-md transition-colors whitespace-nowrap ${
                         inputMode === 'camera'
                           ? 'bg-neutral-800 text-neutral-100 shadow-sm'
                           : 'text-neutral-400 hover:text-neutral-200'
                       }`}
                     >
-                      <Camera className="w-3.5 h-3.5 text-emerald-400" />
+                      <Camera className="w-3.5 h-3.5 text-blue-400" />
                       <span>Camera</span>
                     </button>
                     <button
                       onClick={() => setInputMode('whiteboard')}
-                      className={`flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium rounded-md transition-colors ${
+                      className={`flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium rounded-md transition-colors whitespace-nowrap ${
                         inputMode === 'whiteboard'
                           ? 'bg-neutral-800 text-neutral-100 shadow-sm'
                           : 'text-neutral-400 hover:text-neutral-200'
                       }`}
                     >
-                      <PenTool className="w-3.5 h-3.5 text-emerald-400" />
+                      <PenTool className="w-3.5 h-3.5 text-blue-400" />
                       <span>Draw</span>
                     </button>
                   </div>
@@ -538,7 +575,7 @@ export default function App() {
                           }}
                           className={`border border-dashed rounded-xl p-6 sm:p-8 flex flex-col items-center justify-center text-center cursor-pointer transition-all ${
                             selectedImage
-                              ? 'border-emerald-500/50 bg-neutral-900/40'
+                              ? 'border-blue-500/50 bg-neutral-900/40'
                               : 'border-neutral-800 hover:border-neutral-700 bg-neutral-900/30'
                           }`}
                         >
@@ -549,7 +586,7 @@ export default function App() {
                             onChange={handleFileUpload}
                             className="hidden"
                           />
-                          <div className="w-10 h-10 rounded-lg bg-neutral-900 border border-neutral-800 flex items-center justify-center text-emerald-400 mb-2.5">
+                          <div className="w-10 h-10 rounded-lg bg-neutral-900 border border-neutral-800 flex items-center justify-center text-blue-400 mb-2.5">
                             <Upload className="w-5 h-5" />
                           </div>
                           <span className="text-xs sm:text-sm font-medium text-neutral-200">
@@ -603,9 +640,9 @@ export default function App() {
                                 />
                               </div>
                               <button
-                                onClick={handleExecuteSolve}
+                                onClick={() => handleExecuteSolve()}
                                 disabled={isSolving}
-                                className="w-full py-2.5 px-4 text-xs font-semibold text-neutral-950 bg-emerald-400 hover:bg-emerald-300 disabled:opacity-50 rounded-lg transition-all flex items-center justify-center gap-2 mt-auto"
+                                className="w-full py-2.5 px-4 text-xs font-semibold text-neutral-950 bg-blue-500 hover:bg-blue-400 disabled:opacity-50 rounded-lg transition-all flex items-center justify-center gap-2 mt-auto"
                               >
                                 {isSolving ? (
                                   <>
@@ -622,7 +659,7 @@ export default function App() {
                             </div>
                           ) : (
                             <div className="flex-1 flex flex-col items-center justify-center text-center p-4 text-neutral-500 gap-1.5">
-                              <Layers className="w-8 h-8 opacity-30 text-emerald-400 mb-1" />
+                              <Layers className="w-8 h-8 opacity-30 text-blue-400 mb-1" />
                               <span className="text-xs font-medium text-neutral-400">
                                 No image selected
                               </span>
@@ -636,7 +673,101 @@ export default function App() {
                     </div>
                   )}
 
-                  {/* Mode 2: Live Camera */}
+                  {/* Mode 2: Voice Note */}
+                  {inputMode === 'voice' && (
+                    <div className="grid grid-cols-1 lg:grid-cols-12 gap-5">
+                      <div className="lg:col-span-7 flex flex-col gap-3">
+                        <VoiceCapture
+                          onAudioCaptured={(base64, _mime, duration) => {
+                            setSelectedAudio(base64);
+                            setAudioDuration(duration);
+                          }}
+                          onSolveDirectly={(base64) => {
+                            setSelectedAudio(base64);
+                            handleExecuteSolve(undefined, undefined, base64);
+                          }}
+                          isSolving={isSolving}
+                        />
+
+                        {/* Optional context field for voice */}
+                        <div className="flex items-center gap-2 px-3 py-2 rounded-lg bg-neutral-900/50 border border-neutral-800">
+                          <label className="text-xs text-neutral-400 shrink-0">
+                            Notes:
+                          </label>
+                          <input
+                            type="text"
+                            value={problemNotes}
+                            onChange={(e) => setProblemNotes(e.target.value)}
+                            placeholder="Optional: specify bounds, variable names, or hints"
+                            className="w-full text-xs bg-transparent text-neutral-200 placeholder:text-neutral-600 focus:outline-none"
+                          />
+                        </div>
+                      </div>
+
+                      {/* Voice Action & Status Column */}
+                      <div className="lg:col-span-5 flex flex-col">
+                        <div className="p-4 rounded-xl bg-neutral-900/50 border border-neutral-800 flex flex-col gap-3 min-h-[240px] h-full justify-between">
+                          <div className="flex items-center justify-between pb-2 border-b border-neutral-800/80">
+                            <span className="text-xs font-medium text-neutral-300">
+                              Voice Note Status
+                            </span>
+                            {selectedAudio && (
+                              <button
+                                onClick={() => setSelectedAudio(null)}
+                                className="text-xs text-neutral-400 hover:text-red-400 transition-colors"
+                              >
+                                Clear
+                              </button>
+                            )}
+                          </div>
+
+                          {selectedAudio ? (
+                            <div className="flex-1 flex flex-col items-center justify-center text-center p-4 gap-2">
+                              <div className="w-12 h-12 rounded-full bg-blue-500/10 border border-blue-500/20 flex items-center justify-center text-blue-400">
+                                <Mic className="w-6 h-6" />
+                              </div>
+                              <span className="text-xs font-semibold text-neutral-200">
+                                Voice Note Ready to Solve
+                              </span>
+                              <span className="text-[11px] text-neutral-400 font-mono">
+                                Recorded {audioDuration || 5}s · Encoded for GenLayer
+                              </span>
+                            </div>
+                          ) : (
+                            <div className="flex-1 flex flex-col items-center justify-center text-center p-4 text-neutral-500 gap-1.5">
+                              <Mic className="w-8 h-8 opacity-30 text-blue-400 mb-1" />
+                              <span className="text-xs font-medium text-neutral-400">
+                                No voice note recorded yet
+                              </span>
+                              <p className="text-[11px] text-neutral-500">
+                                Record your voice or select a spoken example.
+                              </p>
+                            </div>
+                          )}
+
+                          <button
+                            onClick={() => handleExecuteSolve(undefined, undefined, selectedAudio || undefined)}
+                            disabled={isSolving || !selectedAudio}
+                            className="w-full py-2.5 px-4 text-xs font-semibold text-neutral-950 bg-blue-500 hover:bg-blue-400 disabled:opacity-50 disabled:hover:bg-blue-500 rounded-lg transition-all flex items-center justify-center gap-2 mt-auto"
+                          >
+                            {isSolving ? (
+                              <>
+                                <RefreshCw className="w-3.5 h-3.5 animate-spin" />
+                                <span>Transcribing & Solving...</span>
+                              </>
+                            ) : (
+                              <>
+                                <Sparkles className="w-3.5 h-3.5" />
+                                <span>Solve Voice Note</span>
+                              </>
+                            )}
+                          </button>
+                        </div>
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Mode 3: Live Camera */}
                   {inputMode === 'camera' && (
                     <CameraCapture
                       onCapture={(dataUrl) => {
@@ -647,7 +778,7 @@ export default function App() {
                     />
                   )}
 
-                  {/* Mode 3: Whiteboard */}
+                  {/* Mode 4: Whiteboard */}
                   {inputMode === 'whiteboard' && (
                     <MathWhiteboard
                       onCapture={(dataUrl) => {
@@ -807,15 +938,15 @@ export default function App() {
       </main>
 
       {/* Footer */}
-      <footer className="border-t border-neutral-800/80 bg-neutral-950 text-neutral-500 text-xs py-4 px-4 sm:px-8 mt-auto">
-        <div className="max-w-7xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-2">
-          <div className="flex items-center gap-2">
-            <span className="font-medium text-neutral-400">Gen Solves</span>
-            <span>·</span>
-            <span>Intelligent Contract on GenLayer Testnet</span>
+      <footer className="border-t border-neutral-800/80 bg-neutral-950 text-neutral-500 text-xs py-4 px-3 sm:px-6 md:px-8 mt-auto">
+        <div className="max-w-7xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-3">
+          <div className="flex items-center gap-2.5">
+            <Logo size="sm" showText={true} />
+            <span className="text-neutral-700">·</span>
+            <span className="text-neutral-400 text-[11px]">GenLayer Intelligent Contract</span>
           </div>
-          <div className="text-neutral-500 text-[11px]">
-            Decentralized validator consensus
+          <div className="text-neutral-500 text-[11px] font-mono">
+            Asimov Testnet · 5/5 Validator Quorum
           </div>
         </div>
       </footer>

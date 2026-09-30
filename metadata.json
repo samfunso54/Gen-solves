@@ -1,8 +1,9 @@
 {
   "name": "Gen Solves Contract",
-  "description": "Intelligent contract on GenLayer that solves complex mathematical calculations by analyzing images of equations, reaching optimistic validator consensus, and verifying proofs on-chain.",
+  "description": "Intelligent contract on GenLayer that solves complex mathematical calculations by analyzing images or voice notes of equations, reaching optimistic validator consensus, and verifying proofs on-chain.",
   "requestFramePermissions": [
-    "camera"
+    "camera",
+    "microphone"
   ],
   "majorCapabilities": [
     "MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"

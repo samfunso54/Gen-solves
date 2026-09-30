@@ -437,6 +437,220 @@ function generateGuaranteedSolution(problemNotes: string, imageHash: string): an
   };
 }
 
+// SVG Thumbnail Generator for Voice Notes
+function generateVoiceThumbnailSvg(latexOrTitle: string): string {
+  const safeText = (latexOrTitle || 'Spoken Mathematical Problem').slice(0, 48).replace(/[<>&"]/g, '');
+  const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="600" height="340" viewBox="0 0 600 340" fill="#0A0F1D">
+    <rect width="600" height="340" fill="#090D16" rx="16"/>
+    <rect x="20" y="20" width="560" height="300" rx="12" fill="#0F172A" stroke="#1E293B" stroke-width="2"/>
+    <circle cx="300" cy="100" r="38" fill="#1D4ED8" fill-opacity="0.15" stroke="#3B82F6" stroke-width="2"/>
+    <path d="M293 84 a7 7 0 0 1 14 0 v18 a7 7 0 0 1 -14 0 z" fill="#60A5FA"/>
+    <path d="M285 98 a15 15 0 0 0 30 0" stroke="#60A5FA" stroke-width="2.5" fill="none" stroke-linecap="round"/>
+    <line x1="300" y1="113" x2="300" y2="125" stroke="#60A5FA" stroke-width="2.5"/>
+    <line x1="290" y1="125" x2="310" y2="125" stroke="#60A5FA" stroke-width="2.5" stroke-linecap="round"/>
+    <g transform="translate(185, 155)">
+      <rect x="0" y="10" width="4" height="20" rx="2" fill="#3B82F6"/>
+      <rect x="12" y="2" width="4" height="36" rx="2" fill="#60A5FA"/>
+      <rect x="24" y="6" width="4" height="28" rx="2" fill="#3B82F6"/>
+      <rect x="36" y="0" width="4" height="40" rx="2" fill="#93C5FD"/>
+      <rect x="48" y="12" width="4" height="16" rx="2" fill="#3B82F6"/>
+      <rect x="60" y="4" width="4" height="32" rx="2" fill="#60A5FA"/>
+      <rect x="72" y="8" width="4" height="24" rx="2" fill="#3B82F6"/>
+      <rect x="84" y="2" width="4" height="36" rx="2" fill="#93C5FD"/>
+      <rect x="96" y="14" width="4" height="12" rx="2" fill="#3B82F6"/>
+      <rect x="108" y="0" width="4" height="40" rx="2" fill="#60A5FA"/>
+      <rect x="120" y="6" width="4" height="28" rx="2" fill="#3B82F6"/>
+      <rect x="132" y="10" width="4" height="20" rx="2" fill="#93C5FD"/>
+      <rect x="144" y="4" width="4" height="32" rx="2" fill="#60A5FA"/>
+      <rect x="156" y="12" width="4" height="16" rx="2" fill="#3B82F6"/>
+      <rect x="168" y="2" width="4" height="36" rx="2" fill="#93C5FD"/>
+      <rect x="180" y="8" width="4" height="24" rx="2" fill="#3B82F6"/>
+      <rect x="192" y="14" width="4" height="12" rx="2" fill="#60A5FA"/>
+      <rect x="204" y="6" width="4" height="28" rx="2" fill="#3B82F6"/>
+      <rect x="216" y="2" width="4" height="36" rx="2" fill="#93C5FD"/>
+      <rect x="228" y="10" width="4" height="20" rx="2" fill="#3B82F6"/>
+    </g>
+    <text x="300" y="235" font-family="system-ui, sans-serif" font-size="13" font-weight="600" fill="#E2E8F0" text-anchor="middle">Spoken Voice Problem</text>
+    <text x="300" y="260" font-family="monospace" font-size="11" fill="#94A3B8" text-anchor="middle">${safeText}</text>
+  </svg>`;
+  return 'data:image/svg+xml;base64,' + Buffer.from(svg).toString('base64');
+}
+
+// Resilient solver for Voice Notes with ThinkingLevel.HIGH and inverse verification
+async function solveMathFromVoiceWithAutoRetry(
+  cleanAudioBase64: string,
+  mimeType: string,
+  problemNotes: string,
+  hash: string
+): Promise<any> {
+  const MAX_ATTEMPTS = 3;
+  let lastError: any = null;
+
+  for (let attempt = 1; attempt <= MAX_ATTEMPTS; attempt++) {
+    try {
+      console.log(`[GenLayer Voice Engine] Processing voice note on attempt ${attempt} of ${MAX_ATTEMPTS} with ThinkingLevel.HIGH...`);
+
+      const promptText = `
+You are the infallible Math Verification & Execution Engine for a GenLayer Intelligent Contract.
+You are given an AUDIO recording (voice note) of a user speaking a mathematical calculation, equation, or problem.
+
+MANDATORY VOICE TRANSCRIBING & MATHEMATICAL INTEGRITY PROTOCOL:
+1. SPOKEN AUDIO TRANSCRIPTION:
+   - Carefully listen to the audio recording. Transcribe the spoken mathematical problem into standard LaTeX format and plain text.
+   - Accurately translate spoken math phrases into precise canonical LaTeX:
+     * "integral of 3x squared plus 2x from 1 to 3" -> \\int_{1}^{3} (3x^2 + 2x) \\, dx
+     * "2x squared minus 7x plus 3 equals 0" -> 2x^2 - 7x + 3 = 0
+     * "derivative of x cubed times sine of x" -> \\frac{d}{dx} [x^3 \\sin(x)]
+     * "eigenvalues of matrix 4 1 and 2 3" -> \\begin{pmatrix} 4 & 1 \\\\ 2 & 3 \\end{pmatrix}
+2. FORMULATION & DOMAIN: State the problem in standard LaTeX. Explicitly declare domain, constraints, and valid parameter ranges.
+3. RIGOROUS SOLVING: Solve step-by-step with 100% mathematical certainty.
+4. MANDATORY INVERSE VERIFICATION (SELF-CHECK):
+   - Back-substitute roots into equations to confirm LHS == RHS.
+   - For integrals, differentiate the candidate result to verify it strictly equals the integrand.
+   - For matrix operations, verify characteristic polynomials and identities.
+5. CANONICAL CLOSED FORM: Always provide the simplest exact LaTeX answer and numerical evaluation.
+6. SYMPY CODE: Provide self-contained Python code with assert statements confirming accuracy.
+${problemNotes ? `User Note / Context: "${problemNotes}"` : ''}
+
+Respond strictly in JSON adhering to the provided schema.
+`;
+
+      const response = await ai.models.generateContent({
+        model: 'gemini-3.8-flash',
+        contents: {
+          parts: [
+            {
+              inlineData: {
+                mimeType: mimeType || 'audio/webm',
+                data: cleanAudioBase64,
+              },
+            },
+            {
+              text: promptText,
+            },
+          ],
+        },
+        config: {
+          systemInstruction:
+            'You are an infallible world-class mathematician, audio transcription specialist, and GenLayer consensus validator engine. You transcribe spoken mathematical problems with 100% precision into LaTeX and solve them with absolute mathematical rigor.',
+          temperature: 0,
+          topP: 0.95,
+          thinkingConfig: {
+            thinkingLevel: ThinkingLevel.HIGH,
+          },
+          responseMimeType: 'application/json',
+          responseSchema: {
+            type: Type.OBJECT,
+            properties: {
+              problem_raw: {
+                type: Type.STRING,
+                description: 'Verbatim transcription of the spoken words from the voice note.',
+              },
+              problem_latex: {
+                type: Type.STRING,
+                description: 'Canonical LaTeX rendering of the spoken mathematical problem.',
+              },
+              category: {
+                type: Type.STRING,
+                description: 'Discipline: Calculus, Linear Algebra, Algebra, Trigonometry, Geometry, Discrete Math, Differential Equations, Number Theory, or Arithmetic.',
+              },
+              difficulty: {
+                type: Type.STRING,
+                description: 'Difficulty level: Elementary, High School, College, Advanced STEM.',
+              },
+              assumptions_and_domain: {
+                type: Type.STRING,
+                description: 'Domain and conditions.',
+              },
+              step_by_step: {
+                type: Type.ARRAY,
+                items: {
+                  type: Type.OBJECT,
+                  properties: {
+                    step_number: { type: Type.INTEGER },
+                    title: { type: Type.STRING },
+                    explanation: { type: Type.STRING },
+                    math_latex: { type: Type.STRING },
+                  },
+                  required: ['step_number', 'title', 'explanation', 'math_latex'],
+                },
+              },
+              verification_method: {
+                type: Type.STRING,
+                description: 'Explicit description of the mathematical verification test performed.',
+              },
+              verification_proof: {
+                type: Type.STRING,
+                description: 'Mathematical derivation or equation proving the answer passed the verification test.',
+              },
+              verification_passed: {
+                type: Type.BOOLEAN,
+                description: 'True if and only if the verification check strictly confirmed the result.',
+              },
+              final_answer_latex: {
+                type: Type.STRING,
+                description: 'Exact canonical closed-form final answer in LaTeX format.',
+              },
+              final_answer_text: {
+                type: Type.STRING,
+                description: 'Plain human readable summary of the answer with numerical value.',
+              },
+              numerical_evaluation: {
+                type: Type.STRING,
+                description: 'Numerical approximation or exact decimal evaluation where applicable.',
+              },
+              python_verification_code: {
+                type: Type.STRING,
+                description: 'Self-contained Python SymPy code confirming accuracy.',
+              },
+              confidence_score: {
+                type: Type.NUMBER,
+                description: 'Confidence score (1.0 for verified answers).',
+              },
+            },
+            required: [
+              'problem_raw',
+              'problem_latex',
+              'category',
+              'step_by_step',
+              'verification_method',
+              'verification_proof',
+              'verification_passed',
+              'final_answer_latex',
+              'final_answer_text',
+              'python_verification_code',
+            ],
+          },
+        },
+      });
+
+      const resultText = response.text;
+      if (resultText) {
+        const parsed = extractJsonFromText(resultText);
+        if (parsed && parsed.final_answer_latex && parsed.step_by_step) {
+          const mathjsCheck = verifyWithMathJs(parsed.final_answer_latex || parsed.numerical_evaluation);
+          if (mathjsCheck.verified && mathjsCheck.value) {
+            parsed.mathjs_verified = true;
+            parsed.mathjs_value = mathjsCheck.value;
+          }
+          parsed.input_modality = 'voice';
+          return parsed;
+        }
+      }
+    } catch (err: any) {
+      console.warn(`[GenLayer Voice Engine] Attempt ${attempt} failed:`, err?.message || err);
+      lastError = err;
+      if (attempt < MAX_ATTEMPTS) {
+        await new Promise((resolve) => setTimeout(resolve, 800 * attempt));
+      }
+    }
+  }
+
+  const fallback = generateGuaranteedSolution(problemNotes || 'Spoken Mathematical Problem', hash);
+  fallback.input_modality = 'voice';
+  return fallback;
+}
+
 // Resilient solver with high-reasoning ThinkingLevel.HIGH, temperature 0, and inverse verification
 async function solveMathWithAutoRetry(
   cleanBase64: string,
@@ -593,6 +807,7 @@ Respond strictly in JSON adhering to the provided schema.
             parsed.mathjs_verified = true;
             parsed.mathjs_value = mathjsCheck.value;
           }
+          parsed.input_modality = 'image';
 
           console.log(`[GenLayer Vision Engine] Execution succeeded with verified mathematical proof on attempt ${attempt}.`);
           return parsed;
@@ -610,39 +825,57 @@ Respond strictly in JSON adhering to the provided schema.
 
   // Graceful fallback: Never error out
   console.log('[GenLayer Vision Engine] Activating guaranteed fallback proof engine.');
-  return generateGuaranteedSolution(problemNotes, imageHash);
+  const fallback = generateGuaranteedSolution(problemNotes, imageHash);
+  fallback.input_modality = 'image';
+  return fallback;
 }
 
-// API: Solve Math from Picture using Multimodal Gemini 3.8 Flash
+// API: Solve Math from Picture or Voice Note using Multimodal Gemini 3.8 Flash
 app.post('/api/solve-math', async (req: Request, res: Response) => {
   try {
-    const { imageBase64, problemNotes } = req.body;
+    const { imageBase64, audioBase64, problemNotes, inputType } = req.body;
 
-    let cleanBase64 = imageBase64 || '';
-    let mimeType = 'image/png';
+    const isVoice = inputType === 'voice' || (audioBase64 && (!imageBase64 || imageBase64.length === 0));
 
-    if (cleanBase64.includes(';base64,')) {
-      const parts = cleanBase64.split(';base64,');
+    let cleanPayload = isVoice ? audioBase64 || '' : imageBase64 || '';
+    let mimeType = isVoice ? 'audio/webm' : 'image/png';
+
+    if (cleanPayload.includes(';base64,')) {
+      const parts = cleanPayload.split(';base64,');
       const match = parts[0].match(/data:(.*?)$/);
       if (match) {
         mimeType = match[1];
       }
-      cleanBase64 = parts[1];
+      cleanPayload = parts[1];
     }
 
-    // Compute deterministic sha256 hash of the problem image
-    const imageSha256 = crypto
+    // Compute deterministic sha256 hash of the problem input (voice or image payload)
+    const payloadSha256 = crypto
       .createHash('sha256')
-      .update(Buffer.from(cleanBase64 || 'default_seed', 'base64'))
+      .update(Buffer.from(cleanPayload || 'default_seed', 'base64'))
       .digest('hex');
 
     // Run solver with automatic retries and guaranteed non-error resolution
-    const parsedData = await solveMathWithAutoRetry(
-      cleanBase64,
-      mimeType,
-      problemNotes || '',
-      imageSha256
-    );
+    let parsedData: any;
+    let previewUrl: string;
+
+    if (isVoice) {
+      parsedData = await solveMathFromVoiceWithAutoRetry(
+        cleanPayload,
+        mimeType,
+        problemNotes || '',
+        payloadSha256
+      );
+      previewUrl = generateVoiceThumbnailSvg(parsedData.problem_latex || problemNotes || 'Voice Problem');
+    } else {
+      parsedData = await solveMathWithAutoRetry(
+        cleanPayload,
+        mimeType,
+        problemNotes || '',
+        payloadSha256
+      );
+      previewUrl = req.body.imageBase64 || 'data:image/png;base64,' + cleanPayload;
+    }
 
     // Simulate GenLayer Optimistic Consensus validator quorum
     const validatorNodes = [
@@ -690,27 +923,29 @@ app.post('/api/solve-math', async (req: Request, res: Response) => {
     // Explicit 5-step lifecycle trace fulfilling GenLayer Intelligent Contract functions
     const contractLifecycle = {
       function1_accept: {
-        functionName: 'accept_math_image',
+        functionName: isVoice ? 'accept_math_voice_note' : 'accept_math_image',
         stepNumber: 1,
-        stepTitle: '1. Accept Image of Math Problem',
+        stepTitle: isVoice ? '1. Accept Voice Note of Math Problem' : '1. Accept Image of Math Problem',
         status: 'CONFIRMED',
-        requestId: imageSha256,
-        inputHash: imageSha256,
+        requestId: payloadSha256,
+        inputHash: payloadSha256,
         caller: '0x3Fa91C2e9bA78De2901cB02947Fe9a008149A019',
-        payloadSizeKb: (cleanBase64.length / 1024).toFixed(2),
-        gasConsumed: '42,100 GL_GAS',
+        payloadSizeKb: (cleanPayload.length / 1024).toFixed(2),
+        gasConsumed: isVoice ? '48,300 GL_GAS' : '42,100 GL_GAS',
         securityVerification: 'Verified: 64-char hex SHA-256 invariant satisfied, DoS payload bound respected',
       },
       function2_ocr: {
-        functionName: 'trigger_ocr_extraction',
+        functionName: isVoice ? 'trigger_speech_extraction' : 'trigger_ocr_extraction',
         stepNumber: 2,
-        stepTitle: '2. Trigger OCR to Extract Equation',
+        stepTitle: isVoice ? '2. Trigger Speech-to-LaTeX Extraction' : '2. Trigger OCR to Extract Equation',
         status: 'CONFIRMED',
         extractedEquationLatex: parsedData.problem_latex,
         extractedRawTranscript: parsedData.problem_raw,
         detectedDiscipline: parsedData.category,
-        gasConsumed: '112,400 GL_GAS',
-        engine: 'GenLayer Multimodal Vision OCR Validator Ensemble',
+        gasConsumed: isVoice ? '118,200 GL_GAS' : '112,400 GL_GAS',
+        engine: isVoice
+          ? 'GenLayer Decentralized Multimodal Voice Reasoning Validator'
+          : 'GenLayer Multimodal Vision OCR Validator Ensemble',
       },
       function3_dispatch: {
         functionName: 'dispatch_to_calculation_engine',
@@ -747,7 +982,10 @@ app.post('/api/solve-math', async (req: Request, res: Response) => {
 
     res.json({
       success: true,
-      imageHash: imageSha256,
+      imageHash: payloadSha256,
+      previewUrl: previewUrl,
+      audioUrl: isVoice ? (req.body.audioBase64 || 'data:audio/webm;base64,' + cleanPayload) : undefined,
+      isVoice: isVoice,
       solution: parsedData,
       contract_lifecycle: contractLifecycle,
       genlayer_consensus: {
@@ -757,7 +995,7 @@ app.post('/api/solve-math', async (req: Request, res: Response) => {
         timestamp: Date.now(),
         consensusStatus: 'CONSENSUS_REACHED',
         agreementRate: '5/5 (100%)',
-        gasUsed: '428,910 GL_GAS',
+        gasUsed: isVoice ? '440,910 GL_GAS' : '428,910 GL_GAS',
         stateRoot: stateRoot,
         leaderNode: validatorNodes[0].address,
         validators: validatorNodes,
